@@ -3,71 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant Live Website Maker</title>
+    <title>Instant Live Website Maker & Sticker Studio</title>
     <style>
-        /* Modern split-screen layout */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f0f2f5; }
-        .editor-side { width: 40%; background: white; padding: 30px; box-shadow: 4px 0 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; overflow-y: auto; }
-        .preview-side { width: 60%; padding: 40px; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s ease; box-sizing: border-box; }
-        
-        /* Stylized UI inputs */
-        h2 { margin-top: 0; color: #1a73e8; font-size: 24px; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f0f2f5; }
+        .editor-side { width: 40%; background: white; padding: 25px; box-shadow: 4px 0 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; overflow-y: auto; }
+        .preview-side { width: 60%; padding: 40px; display: flex; justify-content: center; align-items: center; box-sizing: border-box; position: relative; }
+        h2 { margin-top: 0; color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
         label { font-weight: 600; color: #4a5568; font-size: 14px; }
-        input, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s; }
-        input:focus, textarea:focus { border-color: #1a73e8; outline: none; }
-        textarea { height: 100px; resize: none; }
+        input, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
         
-        /* Dynamic output container card */
-        #outputCard { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; word-wrap: break-word; }
+        /* Action Buttons */
+        button { background-color: #1a73e8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; width: 100%; margin-top: 5px; }
+        button:hover { background-color: #1557b0; }
+        .btn-download { background-color: #2ecc71; }
+        .btn-download:hover { background-color: #27ae60; }
+
+        /* Output View */
+        #outputCard { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; word-wrap: break-word; position: relative; min-height: 200px; }
+        
+        /* Draggable Emoji Stickers */
+        .emoji-sticker { position: absolute; font-size: 50px; cursor: move; user-select: none; touch-action: none; z-index: 100; left: 50%; top: 50%; }
     </style>
 </head>
 <body>
 
-    <!-- LEFT SIDE: Interactive Questions Form -->
+    <!-- LEFT SIDE: Controls -->
     <div class="editor-side">
-        <h2>🛠️ Website Maker Form</h2>
+        <h2>🛠️ Website Maker & Stickers</h2>
         
-        <label for="inputTitle">What is your website title / heading?</label>
-        <input type="text" id="inputTitle" value="My New Website" oninput="updateWebsite()">
+        <label for="inputTitle">Website Title / Heading:</label>
+        <input type="text" id="inputTitle" value="My Sticker Page" oninput="updateWebsite()">
 
-        <label for="inputColor">What background color do you want? (e.g. orange, lightblue, pink, #ffccd5)</label>
+        <label for="inputColor">Background Color:</label>
         <input type="text" id="inputColor" value="orange" oninput="updateWebsite()">
 
-        <label for="inputParagraph">What should the main text message say?</label>
-        <textarea id="inputParagraph" oninput="updateWebsite()">Welcome to my instant live web creator!</textarea>
+        <label for="inputParagraph">Main Message:</label>
+        <textarea id="inputParagraph" oninput="updateWebsite()">Drag emojis onto your website canvas!</textarea>
+
+        <hr style="border:1px solid #e2e8f0; width:100%;">
+
+        <label for="inputEmoji">Type an Emoji here (e.g. 🚀, 😎, 🔥, ✨):</label>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="inputEmoji" value="🚀" style="width:70px; text-align:center;">
+            <button onclick="addEmojiSticker()">Add Emoji Sticker</button>
+        </div>
+
+        <button class="btn-download" onclick="downloadWebsite()">📥 Download Website File</button>
     </div>
 
-    <!-- RIGHT SIDE: Live Instant Output Visual Preview -->
+    <!-- RIGHT SIDE: Live Output Canvas -->
     <div id="previewArea" class="preview-side">
         <div id="outputCard">
-            <h1 id="outputHeading">My New Website</h1>
-            <p id="outputParagraph">Welcome to my instant live web creator!</p>
+            <h1 id="outputHeading">My Sticker Page</h1>
+            <p id="outputParagraph">Drag emojis onto your website canvas!</p>
         </div>
     </div>
 
     <script>
-        // Automatic update function that runs immediately when you type any character
         function updateWebsite() {
-            // 1. Get the values currently typed inside the left boxes
-            const titleValue = document.getElementById('inputTitle').value;
-            const colorValue = document.getElementById('inputColor').value;
-            const paragraphValue = document.getElementById('inputParagraph').value;
-
-            // 2. Target the elements on the right visual side
-            const previewArea = document.getElementById('previewArea');
-            const outputHeading = document.getElementById('outputHeading');
-            const outputParagraph = document.getElementById('outputParagraph');
-
-            // 3. Inject the data straight into the live elements instantly
-            outputHeading.innerText = titleValue;
-            outputParagraph.innerText = paragraphValue;
-            previewArea.style.backgroundColor = colorValue;
+            document.getElementById('outputHeading').innerText = document.getElementById('inputTitle').value;
+            document.getElementById('outputParagraph').innerText = document.getElementById('inputParagraph').value;
+            document.getElementById('previewArea').style.backgroundColor = document.getElementById('inputColor').value;
         }
 
-        // Run once on load to ensure the default placeholder data renders instantly
+        // Feature: Add a drag-and-drop emoji sticker
+        function addEmojiSticker() {
+            const emojiChar = document.getElementById('inputEmoji').value.trim();
+            if(!emojiChar) return;
+
+            const sticker = document.createElement('div');
+            sticker.className = 'emoji-sticker';
+            sticker.innerText = emojiChar;
+            
+            // Randomize starting position slightly inside the target layout box
+            sticker.style.left = (Math.random() * 60 + 20) + '%';
+            sticker.style.top = (Math.random() * 60 + 20) + '%';
+
+            // Enable Dragging (Works seamlessly on computer mouse & tablet fingers)
+            makeElementDraggable(sticker);
+            document.getElementById('outputCard').appendChild(sticker);
+        }
+
+        function makeElementDraggable(elmnt) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            elmnt.onmousedown = dragMouseDown;
+            elmnt.ontouchstart = dragMouseDown; // For tablet tap gestures
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                // Normalize touch screen vs mouse coordinate indexes
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                pos3 = clientX;
+                pos4 = clientY;
+                document.onmouseup = closeDragElement;
+                document.ontouchend = closeDragElement;
+                document.onmousemove = elementDrag;
+                document.ontouchmove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                pos1 = pos3 - clientX;
+                pos2 = pos4 - clientY;
+                pos3 = clientX;
+                pos4 = clientY;
+                
+                // Set the new pixel bounds relative to container layout grid parent
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                document.ontouchend = null;
+                document.ontouchmove = null;
+            }
+        }
+
+        // Feature: Download the exact website built inside memory right to tablet files
+        function downloadWebsite() {
+            const currentCardHtml = document.getElementById('outputCard').innerHTML;
+            const currentBgColor = document.getElementById('previewArea').style.backgroundColor || 'orange';
+            
+            const fullHtmlTemplate = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>My Generated Site</title>
+    <style>
+        body { font-family: sans-serif; margin:0; height:100vh; display:flex; justify-content:center; align-items:center; background-color: ${currentBgColor}; }
+        .card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; word-wrap: break-word; position: relative; min-height: 200px; }
+        .emoji-sticker { position: absolute; font-size: 50px; user-select: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        ${currentCardHtml}
+    </div>
+</body>
+</html>`;
+
+            const blob = new Blob([fullHtmlTemplate], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'my-custom-website.html';
+            link.click();
+        }
+
         updateWebsite();
     </script>
-
 </body>
 </html>
-
