@@ -3,136 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scratch-Style 2D Game & Website Studio</title>
+    <title>Dynamic Game Engine Arena</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f0f2f5; overflow: hidden; }
         .editor-side { width: 40%; background: white; padding: 25px; box-shadow: 4px 0 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; overflow-y: auto; }
         .preview-side { width: 60%; padding: 40px; display: flex; justify-content: center; align-items: center; box-sizing: border-box; position: relative; }
-        h2 { margin-top: 0; color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; margin-bottom: 5px; }
-        h3 { margin: 10px 0 0 0; font-size: 16px; color: #1a73e8; }
-        label { font-weight: 600; color: #4a5568; font-size: 14px; }
+        h2 { margin-top: 0; color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+        label { font-weight: 600; color: #4a5568; font-size: 14px; margin-top: 5px; }
         input, select { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
         
-        /* Control Buttons */
-        button { background-color: #1a73e8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; width: 100%; }
+        /* Spawning Buttons */
+        button { background-color: #1a73e8; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%; }
         button:hover { background-color: #1557b0; }
-        .btn-game { background-color: #ff9100; }
-        .btn-game:hover { background-color: #ff6d00; }
-        .btn-run { background-color: #2ecc71; margin-top: 10px; font-size: 18px; }
+        .btn-spawn { background-color: #ff9100; margin-top: 10px; }
+        .btn-spawn:hover { background-color: #ff6d00; }
+        .btn-run { background-color: #2ecc71; font-size: 18px; margin-top: 15px; }
         .btn-run:hover { background-color: #27ae60; }
 
-        /* Game Engine Canvas Board */
-        #gameCanvas { background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; height: 400px; position: relative; overflow: hidden; border: 3px solid #1a73e8; }
-        .game-sprite { position: absolute; font-size: 40px; user-select: none; touch-action: none; z-index: 100; text-align: center; width: 50px; height: 50px; }
+        /* Game Arena Canvas Container */
+        #gameCanvas { background: #e8f0fe; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; height: 420px; position: relative; overflow: hidden; border: 4px solid #1a73e8; }
         
-        /* Instruction Box overlay */
-        .game-tip { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+        /* Added Sprite Layer Groups */
+        .sprite-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; cursor: move; touch-action: none; user-select: none; z-index: 100; }
+        
+        /* Floating Text Bubble Style */
+        .speech-bubble { background: white; border: 2px solid #333; border-radius: 8px; padding: 4px 8px; font-size: 13px; font-weight: bold; color: #222; text-align: center; max-width: 120px; word-wrap: break-word; margin-bottom: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); position: relative; }
+        .speech-bubble::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); border-width: 8px 6px 0; border-style: solid; border-color: white transparent; display: block; width: 0; z-index: 10; }
+        .speech-bubble::before { content: ''; position: absolute; bottom: -11px; left: 50%; transform: translateX(-50%); border-width: 9px 7px 0; border-style: solid; border-color: #333 transparent; display: block; width: 0; z-index: 5; }
+        
+        .char-emoji { font-size: 45px; line-height: 1; }
     </style>
 </head>
 <body>
 
-    <!-- LEFT SIDE: Game Scripting Controls -->
+    <!-- LEFT SIDE: Game Control Room Panel -->
     <div class="editor-side">
-        <h2>🎮 Drag & Drop Game Maker</h2>
+        <h2>🎮 Add Active Game Characters</h2>
         
-        <label for="inputColor">Game Screen Background Color:</label>
-        <input type="text" id="inputColor" value="#e8f0fe" oninput="updateCanvasColor()">
+        <label for="gameEmoji">1. Type a Character Emoji:</label>
+        <input type="text" id="gameEmoji" value="👻" style="font-size: 20px; text-align: center;">
 
-        <hr style="border:1px solid #e2e8f0; width:100%;">
+        <label for="spriteText">2. Type What They Say (Text Bubble):</label>
+        <input type="text" id="spriteText" value="Boo! Watch me move!">
 
-        <!-- Sprite Config -->
-        <label for="gameEmoji">Choose your Game Character Emoji:</label>
-        <input type="text" id="gameEmoji" value="⚽" style="text-align:center; font-size: 20px;">
-
-        <label for="movementBehavior">Assign Physics / Scratch Logic:</label>
+        <label for="movementBehavior">3. Choose Scratch Movement Rule:</label>
         <select id="movementBehavior">
-            <option value="bounce">🏀 Physics: Bounce around walls</option>
-            <option value="fall">🌧️ Nature: Fall down (Gravity loop)</option>
-            <option value="float">☁️ Weather: Float left to right</option>
+            <option value="bounce">🏀 Physics: Bounce off layout walls</option>
+            <option value="fall">🌧️ Nature: Fall down & loop to top</option>
+            <option value="float">☁️ Weather: Float left to right loop</option>
         </select>
 
-        <button class="btn-game" onclick="addGameSprite()">➕ Spawn Character Into Game</button>
+        <!-- Click to ADD, not edit -->
+        <button class="btn-spawn" onclick="spawnNewCharacter()">➕ Spawn Character Into Game</button>
         
-        <hr style="border:1px solid #e2e8f0; width:100%;">
+        <hr style="border:1px solid #e2e8f0; width:100%; margin-top: 15px;">
         
-        <!-- Engine Actions -->
         <button class="btn-run" id="toggleEngineBtn" onclick="toggleGameEngine()">🟢 Run Game Engine Live</button>
-        <p style="font-size:12px; color:#718096; margin:0;">Tip: You can still drag characters to reposition them with your finger while the engine runs live!</p>
     </div>
 
-    <!-- RIGHT SIDE: Realtime Physics Sandbox Frame -->
+    <!-- RIGHT SIDE: Live Physics Arena Frame -->
     <div id="previewArea" class="preview-side">
-        <div id="gameCanvas">
-            <div class="game-tip">Tap & drag sprites with your finger anytime!</div>
-        </div>
+        <div id="gameCanvas"></div>
     </div>
 
     <script>
         let gameLoopRunning = false;
-        let spritesData = []; // Storage registry tracking coordinates and step vectors
-        let animationFrameId = null;
+        let activeSpritesList = []; 
+        let animationId = null;
 
-        function updateCanvasColor() {
-            document.getElementById('gameCanvas').style.backgroundColor = document.getElementById('inputColor').value;
-        }
-
-        // Add a new dynamic sprite into the engine grid layout
-        function addGameSprite() {
+        // Core App Logic: Spawns and ADDS a brand new item every single click
+        function spawnNewCharacter() {
             const emoji = document.getElementById('gameEmoji').value.trim() || "👾";
+            const message = document.getElementById('spriteText').value.trim() || "";
             const behavior = document.getElementById('movementBehavior').value;
 
-            const spriteElement = document.createElement('div');
-            spriteElement.className = 'game-sprite';
-            spriteElement.innerText = emoji;
+            // Create wrapper layer box
+            const wrapper = document.createElement('div');
+            wrapper.className = 'sprite-wrapper';
             
-            // Initial coordinate settings inside canvas center layout bounds
-            spriteElement.style.left = '225px';
-            spriteElement.style.top = '175px';
+            // Generate Speech bubble if text was typed in
+            if(message !== "") {
+                const bubble = document.createElement('div');
+                bubble.className = 'speech-bubble';
+                bubble.innerText = message;
+                wrapper.appendChild(bubble);
+            }
 
-            document.getElementById('gameCanvas').appendChild(spriteElement);
+            // Generate character body base
+            const charIcon = document.createElement('div');
+            charIcon.className = 'char-emoji';
+            charIcon.innerText = emoji;
+            wrapper.appendChild(charIcon);
 
-            // Register sprite metadata structures into physics vector arrays
-            spritesData.push({
-                element: spriteElement,
+            // Starting spatial positions inside canvas view
+            const startX = Math.random() * 300 + 50;
+            const startY = Math.random() * 150 + 50;
+            wrapper.style.left = startX + 'px';
+            wrapper.style.top = startY + 'px';
+
+            document.getElementById('gameCanvas').appendChild(wrapper);
+
+            // Append unique character layout tracking parameters to index data rows
+            const newSpriteObject = {
+                element: wrapper,
                 behavior: behavior,
-                x: 225,
-                y: 175,
-                dx: (Math.random() * 4 + 2) * (Math.random() > 0.5 ? 1 : -1), // X speed vector
-                dy: (Math.random() * 4 + 2) * (Math.random() > 0.5 ? 1 : -1)  // Y speed vector
-            });
+                x: startX,
+                y: startY,
+                dx: (Math.random() * 3 + 2) * (Math.random() > 0.5 ? 1 : -1),
+                dy: (Math.random() * 3 + 2) * (Math.random() > 0.5 ? 1 : -1),
+                isDragging: false
+            };
 
-            makeElementDraggable(spriteElement, spritesData[spritesData.length - 1]);
+            activeSpritesList.push(newSpriteObject);
+            makeSpriteDraggable(wrapper, newSpriteObject);
         }
 
-        // Engine loop state machine logic handler
         function toggleGameEngine() {
             const btn = document.getElementById('toggleEngineBtn');
             if (gameLoopRunning) {
                 gameLoopRunning = false;
                 btn.innerText = "🟢 Run Game Engine Live";
                 btn.style.backgroundColor = "#2ecc71";
-                cancelAnimationFrame(animationFrameId);
+                cancelAnimationFrame(animationId);
             } else {
                 gameLoopRunning = true;
                 btn.innerText = "🛑 Stop Engine Physics";
                 btn.style.backgroundColor = "#e74c3c";
-                runEngineFrame();
+                runEngineLoop();
             }
         }
 
-        // Frame rendering cycle calculations (Scratch block emulation scripts)
-        function runEngineFrame() {
+        function runEngineLoop() {
             if (!gameLoopRunning) return;
 
             const canvas = document.getElementById('gameCanvas');
-            const maxW = canvas.clientWidth - 50;
-            const maxH = canvas.clientHeight - 50;
+            
+            activeSpritesList.forEach(sprite => {
+                if (sprite.isDragging) return;
 
-            spritesData.forEach(sprite => {
-                if (sprite.isDragging) return; // Halt automated coordinate tracking during finger drag interactions
+                // Dynamic dimension calculation bounds based on element heights
+                const maxW = canvas.clientWidth - sprite.element.clientWidth;
+                const maxH = canvas.clientHeight - sprite.element.clientHeight;
 
                 if (sprite.behavior === 'bounce') {
-                    // Script replica: If on edge, bounce vector directions
                     sprite.x += sprite.dx;
                     sprite.y += sprite.dy;
 
@@ -140,68 +153,54 @@
                     if (sprite.y <= 0 || sprite.y >= maxH) { sprite.dy *= -1; sprite.y = Math.max(0, Math.min(sprite.y, maxH)); }
                 } 
                 else if (sprite.behavior === 'fall') {
-                    // Script replica: Gravity slide down loop
-                    sprite.y += 4; 
-                    if (sprite.y >= maxH) { sprite.y = 0; sprite.x = Math.random() * maxW; } // Respawn back at top cloud layer bounds
+                    sprite.y += 3;
+                    if (sprite.y >= maxH) { sprite.y = 0; sprite.x = Math.random() * maxW; }
                 } 
                 else if (sprite.behavior === 'float') {
-                    // Script replica: Change X coordinates smoothly
                     sprite.x += 2;
                     if (sprite.x >= maxW) { sprite.x = 0; sprite.y = Math.random() * maxH; }
                 }
 
-                // Render newly calculated pixel allocations onto screen layout tags
                 sprite.element.style.left = sprite.x + 'px';
                 sprite.element.style.top = sprite.y + 'px';
             });
 
-            animationFrameId = requestAnimationFrame(runEngineFrame);
+            animationId = requestAnimationFrame(runEngineLoop);
         }
 
-        // Drag handler that updates internal game engine coordinates safely
-        function makeElementDraggable(elmnt, spriteObj) {
+        // Tablet input listener that updates tracking structures smoothly
+        function makeSpriteDraggable(elmnt, spriteObj) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            elmnt.onmousedown = dragMouseDown;
-            elmnt.ontouchstart = dragMouseDown;
+            elmnt.onmousedown = dragStart;
+            elmnt.ontouchstart = dragStart;
 
-            function dragMouseDown(e) {
-                e = e || window.event;
+            function dragStart(e) {
                 spriteObj.isDragging = true;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const clientX = e.touches ? e.touches.clientX : e.clientX;
+                const clientY = e.touches ? e.touches.clientY : e.clientY;
                 pos3 = clientX;
                 pos4 = clientY;
-                document.onmouseup = closeDragElement;
-                document.ontouchend = closeDragElement;
-                document.onmousemove = elementDrag;
-                document.ontouchmove = elementDrag;
+                document.onmouseup = dragEnd;
+                document.ontouchend = dragEnd;
+                document.onmousemove = dragMove;
+                document.ontouchmove = dragMove;
             }
 
-            function elementDrag(e) {
-                e = e || window.event;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            function dragMove(e) {
+                const clientX = e.touches ? e.touches.clientX : e.clientX;
+                const clientY = e.touches ? e.touches.clientY : e.clientY;
                 pos1 = pos3 - clientX;
                 pos2 = pos4 - clientY;
                 pos3 = clientX;
                 pos4 = clientY;
                 
-                let newTop = elmnt.offsetTop - pos2;
-                let newLeft = elmnt.offsetLeft - pos1;
-
-                // Lock positions inside inside the real game box screen dimensions
-                spriteObj.x = Math.max(0, Math.min(newLeft, 450));
-                spriteObj.y = Math.max(0, Math.min(newTop, 350));
+                spriteObj.x = elmnt.offsetLeft - pos1;
+                spriteObj.y = elmnt.offsetTop - pos2;
 
                 elmnt.style.top = spriteObj.y + "px";
                 elmnt.style.left = spriteObj.x + "px";
             }
 
-            function closeDragElement() {
+            function dragEnd() {
                 spriteObj.isDragging = false;
-                document.onmouseup = null; document.onmousemove = null;
-                document.ontouchend = null; document.ontouchmove = null;
-            }
-        }
-
-updateCanvasColor();
+document.onmouseup = null; document.onmousemove = null;document.ontouchend = null; document.ontouchmove = null;}}
