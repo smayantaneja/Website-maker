@@ -3,96 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant Live Website Maker & Sticker Studio</title>
+    <title>Scratch-Style 2D Game & Website Studio</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f0f2f5; overflow: hidden; }
         .editor-side { width: 40%; background: white; padding: 25px; box-shadow: 4px 0 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; overflow-y: auto; }
         .preview-side { width: 60%; padding: 40px; display: flex; justify-content: center; align-items: center; box-sizing: border-box; position: relative; }
-        h2 { margin-top: 0; color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+        h2 { margin-top: 0; color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; margin-bottom: 5px; }
+        h3 { margin: 10px 0 0 0; font-size: 16px; color: #1a73e8; }
         label { font-weight: 600; color: #4a5568; font-size: 14px; }
-        input, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
         
-        /* Action Buttons */
-        button { background-color: #1a73e8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; width: 100%; margin-top: 5px; }
+        /* Control Buttons */
+        button { background-color: #1a73e8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; width: 100%; }
         button:hover { background-color: #1557b0; }
-        .btn-download { background-color: #2ecc71; }
-        .btn-download:hover { background-color: #27ae60; }
+        .btn-game { background-color: #ff9100; }
+        .btn-game:hover { background-color: #ff6d00; }
+        .btn-run { background-color: #2ecc71; margin-top: 10px; font-size: 18px; }
+        .btn-run:hover { background-color: #27ae60; }
 
-        /* Output View */
-        #outputCard { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; word-wrap: break-word; position: relative; min-height: 200px; }
+        /* Game Engine Canvas Board */
+        #gameCanvas { background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; height: 400px; position: relative; overflow: hidden; border: 3px solid #1a73e8; }
+        .game-sprite { position: absolute; font-size: 40px; user-select: none; touch-action: none; z-index: 100; text-align: center; width: 50px; height: 50px; }
         
-        /* Draggable Emoji Stickers */
-        .emoji-sticker { position: absolute; font-size: 50px; cursor: move; user-select: none; touch-action: none; z-index: 100; left: 50%; top: 50%; }
+        /* Instruction Box overlay */
+        .game-tip { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; }
     </style>
 </head>
 <body>
 
-    <!-- LEFT SIDE: Controls -->
+    <!-- LEFT SIDE: Game Scripting Controls -->
     <div class="editor-side">
-        <h2>🛠️ Website Maker & Stickers</h2>
+        <h2>🎮 Drag & Drop Game Maker</h2>
         
-        <label for="inputTitle">Website Title / Heading:</label>
-        <input type="text" id="inputTitle" value="My Sticker Page" oninput="updateWebsite()">
-
-        <label for="inputColor">Background Color:</label>
-        <input type="text" id="inputColor" value="orange" oninput="updateWebsite()">
-
-        <label for="inputParagraph">Main Message:</label>
-        <textarea id="inputParagraph" oninput="updateWebsite()">Drag emojis onto your website canvas!</textarea>
+        <label for="inputColor">Game Screen Background Color:</label>
+        <input type="text" id="inputColor" value="#e8f0fe" oninput="updateCanvasColor()">
 
         <hr style="border:1px solid #e2e8f0; width:100%;">
 
-        <label for="inputEmoji">Type an Emoji here (e.g. 🚀, 😎, 🔥, ✨):</label>
-        <div style="display:flex; gap:10px;">
-            <input type="text" id="inputEmoji" value="🚀" style="width:70px; text-align:center;">
-            <button onclick="addEmojiSticker()">Add Emoji Sticker</button>
-        </div>
+        <!-- Sprite Config -->
+        <label for="gameEmoji">Choose your Game Character Emoji:</label>
+        <input type="text" id="gameEmoji" value="⚽" style="text-align:center; font-size: 20px;">
 
-        <button class="btn-download" onclick="downloadWebsite()">📥 Download Website File</button>
+        <label for="movementBehavior">Assign Physics / Scratch Logic:</label>
+        <select id="movementBehavior">
+            <option value="bounce">🏀 Physics: Bounce around walls</option>
+            <option value="fall">🌧️ Nature: Fall down (Gravity loop)</option>
+            <option value="float">☁️ Weather: Float left to right</option>
+        </select>
+
+        <button class="btn-game" onclick="addGameSprite()">➕ Spawn Character Into Game</button>
+        
+        <hr style="border:1px solid #e2e8f0; width:100%;">
+        
+        <!-- Engine Actions -->
+        <button class="btn-run" id="toggleEngineBtn" onclick="toggleGameEngine()">🟢 Run Game Engine Live</button>
+        <p style="font-size:12px; color:#718096; margin:0;">Tip: You can still drag characters to reposition them with your finger while the engine runs live!</p>
     </div>
 
-    <!-- RIGHT SIDE: Live Output Canvas -->
+    <!-- RIGHT SIDE: Realtime Physics Sandbox Frame -->
     <div id="previewArea" class="preview-side">
-        <div id="outputCard">
-            <h1 id="outputHeading">My Sticker Page</h1>
-            <p id="outputParagraph">Drag emojis onto your website canvas!</p>
+        <div id="gameCanvas">
+            <div class="game-tip">Tap & drag sprites with your finger anytime!</div>
         </div>
     </div>
 
     <script>
-        function updateWebsite() {
-            document.getElementById('outputHeading').innerText = document.getElementById('inputTitle').value;
-            document.getElementById('outputParagraph').innerText = document.getElementById('inputParagraph').value;
-            document.getElementById('previewArea').style.backgroundColor = document.getElementById('inputColor').value;
+        let gameLoopRunning = false;
+        let spritesData = []; // Storage registry tracking coordinates and step vectors
+        let animationFrameId = null;
+
+        function updateCanvasColor() {
+            document.getElementById('gameCanvas').style.backgroundColor = document.getElementById('inputColor').value;
         }
 
-        // Feature: Add a drag-and-drop emoji sticker
-        function addEmojiSticker() {
-            const emojiChar = document.getElementById('inputEmoji').value.trim();
-            if(!emojiChar) return;
+        // Add a new dynamic sprite into the engine grid layout
+        function addGameSprite() {
+            const emoji = document.getElementById('gameEmoji').value.trim() || "👾";
+            const behavior = document.getElementById('movementBehavior').value;
 
-            const sticker = document.createElement('div');
-            sticker.className = 'emoji-sticker';
-            sticker.innerText = emojiChar;
+            const spriteElement = document.createElement('div');
+            spriteElement.className = 'game-sprite';
+            spriteElement.innerText = emoji;
             
-            // Randomize starting position slightly inside the target layout box
-            sticker.style.left = (Math.random() * 60 + 20) + '%';
-            sticker.style.top = (Math.random() * 60 + 20) + '%';
+            // Initial coordinate settings inside canvas center layout bounds
+            spriteElement.style.left = '225px';
+            spriteElement.style.top = '175px';
 
-            // Enable Dragging (Works seamlessly on computer mouse & tablet fingers)
-            makeElementDraggable(sticker);
-            document.getElementById('outputCard').appendChild(sticker);
+            document.getElementById('gameCanvas').appendChild(spriteElement);
+
+            // Register sprite metadata structures into physics vector arrays
+            spritesData.push({
+                element: spriteElement,
+                behavior: behavior,
+                x: 225,
+                y: 175,
+                dx: (Math.random() * 4 + 2) * (Math.random() > 0.5 ? 1 : -1), // X speed vector
+                dy: (Math.random() * 4 + 2) * (Math.random() > 0.5 ? 1 : -1)  // Y speed vector
+            });
+
+            makeElementDraggable(spriteElement, spritesData[spritesData.length - 1]);
         }
 
-        function makeElementDraggable(elmnt) {
+        // Engine loop state machine logic handler
+        function toggleGameEngine() {
+            const btn = document.getElementById('toggleEngineBtn');
+            if (gameLoopRunning) {
+                gameLoopRunning = false;
+                btn.innerText = "🟢 Run Game Engine Live";
+                btn.style.backgroundColor = "#2ecc71";
+                cancelAnimationFrame(animationFrameId);
+            } else {
+                gameLoopRunning = true;
+                btn.innerText = "🛑 Stop Engine Physics";
+                btn.style.backgroundColor = "#e74c3c";
+                runEngineFrame();
+            }
+        }
+
+        // Frame rendering cycle calculations (Scratch block emulation scripts)
+        function runEngineFrame() {
+            if (!gameLoopRunning) return;
+
+            const canvas = document.getElementById('gameCanvas');
+            const maxW = canvas.clientWidth - 50;
+            const maxH = canvas.clientHeight - 50;
+
+            spritesData.forEach(sprite => {
+                if (sprite.isDragging) return; // Halt automated coordinate tracking during finger drag interactions
+
+                if (sprite.behavior === 'bounce') {
+                    // Script replica: If on edge, bounce vector directions
+                    sprite.x += sprite.dx;
+                    sprite.y += sprite.dy;
+
+                    if (sprite.x <= 0 || sprite.x >= maxW) { sprite.dx *= -1; sprite.x = Math.max(0, Math.min(sprite.x, maxW)); }
+                    if (sprite.y <= 0 || sprite.y >= maxH) { sprite.dy *= -1; sprite.y = Math.max(0, Math.min(sprite.y, maxH)); }
+                } 
+                else if (sprite.behavior === 'fall') {
+                    // Script replica: Gravity slide down loop
+                    sprite.y += 4; 
+                    if (sprite.y >= maxH) { sprite.y = 0; sprite.x = Math.random() * maxW; } // Respawn back at top cloud layer bounds
+                } 
+                else if (sprite.behavior === 'float') {
+                    // Script replica: Change X coordinates smoothly
+                    sprite.x += 2;
+                    if (sprite.x >= maxW) { sprite.x = 0; sprite.y = Math.random() * maxH; }
+                }
+
+                // Render newly calculated pixel allocations onto screen layout tags
+                sprite.element.style.left = sprite.x + 'px';
+                sprite.element.style.top = sprite.y + 'px';
+            });
+
+            animationFrameId = requestAnimationFrame(runEngineFrame);
+        }
+
+        // Drag handler that updates internal game engine coordinates safely
+        function makeElementDraggable(elmnt, spriteObj) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            
             elmnt.onmousedown = dragMouseDown;
-            elmnt.ontouchstart = dragMouseDown; // For tablet tap gestures
+            elmnt.ontouchstart = dragMouseDown;
 
             function dragMouseDown(e) {
                 e = e || window.event;
-                // Normalize touch screen vs mouse coordinate indexes
+                spriteObj.isDragging = true;
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                 pos3 = clientX;
@@ -112,50 +186,22 @@
                 pos3 = clientX;
                 pos4 = clientY;
                 
-                // Set the new pixel bounds relative to container layout grid parent
-                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                let newTop = elmnt.offsetTop - pos2;
+                let newLeft = elmnt.offsetLeft - pos1;
+
+                // Lock positions inside inside the real game box screen dimensions
+                spriteObj.x = Math.max(0, Math.min(newLeft, 450));
+                spriteObj.y = Math.max(0, Math.min(newTop, 350));
+
+                elmnt.style.top = spriteObj.y + "px";
+                elmnt.style.left = spriteObj.x + "px";
             }
 
             function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
-                document.ontouchend = null;
-                document.ontouchmove = null;
+                spriteObj.isDragging = false;
+                document.onmouseup = null; document.onmousemove = null;
+                document.ontouchend = null; document.ontouchmove = null;
             }
         }
 
-        // Feature: Download the exact website built inside memory right to tablet files
-        function downloadWebsite() {
-            const currentCardHtml = document.getElementById('outputCard').innerHTML;
-            const currentBgColor = document.getElementById('previewArea').style.backgroundColor || 'orange';
-            
-            const fullHtmlTemplate = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>My Generated Site</title>
-    <style>
-        body { font-family: sans-serif; margin:0; height:100vh; display:flex; justify-content:center; align-items:center; background-color: ${currentBgColor}; }
-        .card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; word-wrap: break-word; position: relative; min-height: 200px; }
-        .emoji-sticker { position: absolute; font-size: 50px; user-select: none; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        ${currentCardHtml}
-    </div>
-</body>
-</html>`;
-
-            const blob = new Blob([fullHtmlTemplate], { type: 'text/html' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'my-custom-website.html';
-            link.click();
-        }
-
-        updateWebsite();
-    </script>
-</body>
-</html>
+updateCanvasColor();
