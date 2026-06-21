@@ -1,1 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instant Live Website Maker</title>
+    <style>
+        /* Modern split-screen layout */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f0f2f5; }
+        .editor-side { width: 40%; background: white; padding: 30px; box-shadow: 4px 0 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; overflow-y: auto; }
+        .preview-side { width: 60%; padding: 40px; display: flex; justify-content: center; align-items: center; transition: background-color 0.3s ease; box-sizing: border-box; }
+        
+        /* Stylized UI inputs */
+        h2 { margin-top: 0; color: #1a73e8; font-size: 24px; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+        label { font-weight: 600; color: #4a5568; font-size: 14px; }
+        input, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s; }
+        input:focus, textarea:focus { border-color: #1a73e8; outline: none; }
+        textarea { height: 100px; resize: none; }
+        
+        /* Dynamic output container card */
+        #outputCard { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT SIDE: Interactive Questions Form -->
+    <div class="editor-side">
+        <h2>🛠️ Website Maker Form</h2>
+        
+        <label for="inputTitle">What is your website title / heading?</label>
+        <input type="text" id="inputTitle" value="My New Website" oninput="updateWebsite()">
+
+        <label for="inputColor">What background color do you want? (e.g. orange, lightblue, pink, #ffccd5)</label>
+        <input type="text" id="inputColor" value="orange" oninput="updateWebsite()">
+
+        <label for="inputParagraph">What should the main text message say?</label>
+        <textarea id="inputParagraph" oninput="updateWebsite()">Welcome to my instant live web creator!</textarea>
+    </div>
+
+    <!-- RIGHT SIDE: Live Instant Output Visual Preview -->
+    <div id="previewArea" class="preview-side">
+        <div id="outputCard">
+            <h1 id="outputHeading">My New Website</h1>
+            <p id="outputParagraph">Welcome to my instant live web creator!</p>
+        </div>
+    </div>
+
+    <script>
+        // Automatic update function that runs immediately when you type any character
+        function updateWebsite() {
+            // 1. Get the values currently typed inside the left boxes
+            const titleValue = document.getElementById('inputTitle').value;
+            const colorValue = document.getElementById('inputColor').value;
+            const paragraphValue = document.getElementById('inputParagraph').value;
+
+            // 2. Target the elements on the right visual side
+            const previewArea = document.getElementById('previewArea');
+            const outputHeading = document.getElementById('outputHeading');
+            const outputParagraph = document.getElementById('outputParagraph');
+
+            // 3. Inject the data straight into the live elements instantly
+            outputHeading.innerText = titleValue;
+            outputParagraph.innerText = paragraphValue;
+            previewArea.style.backgroundColor = colorValue;
+        }
+
+        // Run once on load to ensure the default placeholder data renders instantly
+        updateWebsite();
+    </script>
+
+</body>
+</html>
 
