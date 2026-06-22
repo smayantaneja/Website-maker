@@ -3,189 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant Live Website Maker & Game Studio</title>
+    <title>Canva AI Web & Game Studio</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f0f2f5; }
-        .editor-side { width: 40%; background: white; padding: 25px; box-shadow: 4px 0 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; overflow-y: auto; }
-        .preview-side { width: 60%; padding: 40px; display: flex; justify-content: center; align-items: center; box-sizing: border-box; position: relative; }
-        h2 { margin-top: 0; color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
-        h3 { margin: 15px 0 5px 0; color: #1a73e8; font-size: 16px; }
-        label { font-weight: 600; color: #4a5568; font-size: 14px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        /* Modern Canva Styling and UI Colors */
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f3f5f9; overflow: hidden; }
         
-        /* Action Buttons */
-        button { background-color: #1a73e8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; width: 100%; margin-top: 5px; }
-        button:hover { background-color: #1557b0; }
-        .btn-spawn { background-color: #ff9100; }
-        .btn-spawn:hover { background-color: #ff6d00; }
-        .btn-run { background-color: #9c27b0; font-size: 16px; }
-        .btn-run:hover { background-color: #7b1fa2; }
+        /* Left Panel - Canva Sidebar Style */
+        .canva-sidebar { width: 35%; background: #ffffff; padding: 25px; box-shadow: 5px 0 20px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; overflow-y: auto; z-index: 10; }
+        .canva-workspace { width: 65%; padding: 40px; display: flex; justify-content: center; align-items: center; box-sizing: border-box; position: relative; }
+        
+        /* UI Typography & Elements */
+        h2 { margin-top: 0; color: #7d2ae8; font-size: 22px; font-weight: 700; border-bottom: 2px solid #f1f2f6; padding-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        h3 { margin: 15px 0 5px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        label { font-weight: 600; color: #334155; font-size: 13px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #7d2ae8; outline: none; }
+        
+        /* Canva Button Theme Matrix */
+        .canva-ai-badge { background: linear-gradient(135deg, #7d2ae8 0%, #00c4cc 100%); padding: 15px; border-radius: 12px; color: white; display: flex; flex-direction: column; gap: 8px; }
+        button { background-color: #7d2ae8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        .btn-ai { background: linear-gradient(135deg, #7d2ae8 0%, #2575fc 100%); }
+        .btn-spawn { background-color: #00c4cc; color: #0f172a; }
         .btn-download { background-color: #2ecc71; }
-        .btn-download:hover { background-color: #27ae60; }
 
-        /* Output View Canvas Base Card */
-        #outputCard { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; word-wrap: break-word; position: relative; min-height: 350px; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; }
-        #outputHeading { margin: 0 0 10px 0; }
-        #outputParagraph { margin: 0; }
+        /* Right Side Canvas Page Visual Representation */
+        #outputCard { background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); width: 100%; max-width: 520px; height: 460px; position: relative; overflow: hidden; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; box-sizing: border-box; transition: background-color 0.4s ease; }
+        #outputHeading { margin: 20px 0 10px 0; font-size: 32px; color: #1e293b; text-align: center; font-weight: 700; transition: color 0.3s; }
+        #outputParagraph { margin: 0; color: #64748b; font-size: 16px; max-width: 85%; text-align: center; transition: color 0.3s; line-height: 1.5; }
 
-        /* Added Custom Game Character Groups */
-        .sprite-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; cursor: move; touch-action: none; user-select: none; z-index: 100; left: 40%; top: 40%; }
-        .char-emoji { font-size: 45px; line-height: 1; }
+        /* Canva-style Element Draggable Layers */
+        .sprite-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; cursor: move; touch-action: none; user-select: none; z-index: 100; }
+        .char-emoji { font-size: 50px; line-height: 1; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
         
-        /* Dynamic Floating Speech Text Bubble Style */
-        .speech-bubble { background: white; border: 2px solid #333; border-radius: 8px; padding: 4px 8px; font-size: 13px; font-weight: bold; color: #222; text-align: center; max-width: 120px; word-wrap: break-word; margin-bottom: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); position: relative; }
+        /* Floating Text Bubble Layer */
+        .speech-bubble { background: white; border: 2px solid #1e293b; border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 600; color: #1e293b; text-align: center; max-width: 130px; word-wrap: break-word; margin-bottom: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; }
         .speech-bubble::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); border-width: 8px 6px 0; border-style: solid; border-color: white transparent; display: block; width: 0; z-index: 10; }
-        .speech-bubble::before { content: ''; position: absolute; bottom: -11px; left: 50%; transform: translateX(-50%); border-width: 9px 7px 0; border-style: solid; border-color: #333 transparent; display: block; width: 0; z-index: 5; }
+        .speech-bubble::before { content: ''; position: absolute; bottom: -11px; left: 50%; transform: translateX(-50%); border-width: 9px 7px 0; border-style: solid; border-color: #1e293b transparent; display: block; width: 0; z-index: 5; }
     </style>
 </head>
 <body>
 
-    <!-- LEFT SIDE: Controls Dashboard -->
-    <div class="editor-side">
-        <h2>🛠️ Website Maker & Game Studio</h2>
+    <!-- LEFT SIDE: Canva AI Control Panel Menu -->
+    <div class="canva-sidebar">
+        <h2>✨ Canva AI Assistant Studio</h2>
         
-        <label for="inputTitle">Website Title / Heading:</label>
-        <input type="text" id="inputTitle" value="My Sticker Page" oninput="updateWebsite()">
+        <!-- 1. Canva Magic Design Prompt Input Block -->
+        <div class="canva-ai-badge">
+            <label for="aiPrompt" style="color: white;">🪄 Canva Magic Prompt (Describe your theme):</label>
+            <input type="text" id="aiPrompt" placeholder="Try: space galaxy, cute puppy, gaming arena, spooky mansion...">
+            <button class="btn-ai" onclick="runCanvaMagicAI()">⚡ Generate Layout with AI</button>
+        </div>
 
-        <label for="inputColor">Background Color (e.g. green, blue, pink):</label>
-        <input type="text" id="inputColor" value="lightblue" oninput="updateWebsite()">
+        <h3>🎨 Visual Canvas Assets</h3>
+        <label for="inputTitle">Heading Text:</label>
+        <input type="text" id="inputTitle" value="Canva AI Page Layout" oninput="updateCanvaCanvas()">
 
-        <label for="inputParagraph">Main Message Text Box:</label>
-        <textarea id="inputParagraph" oninput="updateWebsite()" rows="3">Spawn active game characters below!</textarea>
+        <label for="inputColor">Background Canvas Color:</label>
+        <input type="text" id="inputColor" value="lightblue" oninput="updateCanvaCanvas()">
 
-        <hr style="border:1px solid #e2e8f0; width:100%; margin: 10px 0;">
+        <label for="inputParagraph">Subtext Paragraph:</label>
+        <textarea id="inputParagraph" oninput="updateCanvaCanvas()" rows="2">Ask the Canva AI box to generate a theme or create your own components below!</textarea>
 
-        <h3>👾 Character Spawner Control</h3>
-        
-        <label for="gameEmoji">1. Type Character Emoji:</label>
-        <input type="text" id="gameEmoji" value="🛸" style="text-align:center; font-size: 18px;">
+        <h3>👾 Interactive Graphic Elements</h3>
+        <label for="gameEmoji">Character Emoji Graphic:</label>
+        <input type="text" id="gameEmoji" value="🎨" style="text-align:center; font-size: 18px;">
 
-        <label for="spriteText">2. Type What They Say (Speech Bubble):</label>
-        <input type="text" id="spriteText" value="Look at me!">
+        <label for="spriteText">Element Dialogue Message:</label>
+        <input type="text" id="spriteText" value="Design live!">
 
-        <label for="movementBehavior">3. Choose Motion Rule:</label>
+        <label for="movementBehavior">Motion FX Behavior Rule:</label>
         <select id="movementBehavior">
-            <option value="bounce">🏀 Physics: Bounce around walls</option>
-            <option value="fall">🌧️ Nature: Fall down loop</option>
-            <option value="float">☁️ Weather: Float left to right</option>
+            <option value="bounce">🏀 Physics: Bounce off screen borders</option>
+            <option value="fall">🌧️ Nature: Gravity slide down loop</option>
+            <option value="float">☁️ Weather: Float left to right loop</option>
         </select>
 
-        <button class="btn-spawn" onclick="spawnNewCharacter()">➕ Spawn Character Into Game</button>
-        <button class="btn-run" id="toggleEngineBtn" onclick="toggleGameEngine()">🟢 Run Game Engine Live</button>
-
-        <hr style="border:1px solid #e2e8f0; width:100%; margin: 10px 0;">
-
-        <button class="btn-download" onclick="downloadWebsite()">📥 Download Website File</button>
+        <button class="btn-spawn" onclick="spawnCanvaElement()">➕ Add Graphic Element Layer</button>
+        <button onclick="toggleCanvaPhysicsEngine()" id="engineToggleBtn" style="background-color: #4f46e5;">🟢 Run Design Motion Engine</button>
+        
+        <hr style="border:0; border-top:1px solid #e2e8f0; margin: 5px 0;">
+        <button class="btn-download" onclick="downloadCanvaProject()">📥 Download Design Project File</button>
     </div>
 
-    <!-- RIGHT SIDE: Live Output Canvas Sandbox -->
-    <div id="previewArea" class="preview-side">
+    <!-- RIGHT SIDE: Live Interactive Canvas Page Grid -->
+    <div class="canva-workspace">
         <div id="outputCard">
-            <h1 id="outputHeading">My Sticker Page</h1>
-            <p id="outputParagraph">Spawn active game characters below!</p>
+            <h1 id="outputHeading">Canva AI Page Layout</h1>
+            <p id="outputParagraph">Ask the Canva AI box to generate a theme or create your own components below!</p>
         </div>
     </div>
 
     <script>
         let gameLoopRunning = false;
-        let activeSpritesList = []; 
-        let animationId = null;
+        let activeElementsArray = []; 
+        let animationFrameId = null;
 
-        function updateWebsite() {
+        function updateCanvaCanvas() {
             document.getElementById('outputHeading').innerText = document.getElementById('inputTitle').value;
             document.getElementById('outputParagraph').innerText = document.getElementById('inputParagraph').value;
-            document.getElementById('previewArea').style.backgroundColor = document.getElementById('inputColor').value;
+            document.getElementById('outputCard').style.backgroundColor = document.getElementById('inputColor').value;
         }
 
-        // Feature: Spawn and ADD a unique character element into the grid container canvas
-        function spawnNewCharacter() {
-            const emoji = document.getElementById('gameEmoji').value.trim() || "👾";
-            const message = document.getElementById('spriteText').value.trim() || "";
-            const behavior = document.getElementById('movementBehavior').value;
+        // Canva Magic AI Simulation Logic Map
+        function runCanvaMagicAI() {
+            const query = document.getElementById('aiPrompt').value.toLowerCase().trim();
+            let heading = "Custom Asset Hub";
+            let color = "lightblue";
+            let message = "A completely clean layout custom created based on semantic assistant parameters.";
 
-            const wrapper = document.createElement('div');
-            wrapper.className = 'sprite-wrapper';
-            
-            // Build speech balloon layer layout block if string is populated
-            if(message !== "") {
-                const bubble = document.createElement('div');
-                bubble.className = 'speech-bubble';
-                bubble.innerText = message;
-                wrapper.appendChild(bubble);
-            }
-
-            const charIcon = document.createElement('div');
-            charIcon.className = 'char-emoji';
-            charIcon.innerText = emoji;
-            wrapper.appendChild(charIcon);
-
-            // Stagger position randomly near the middle area
-            const startX = Math.random() * 220 + 40;
-            const startY = Math.random() * 120 + 120;
-            wrapper.style.left = startX + 'px';
-            wrapper.style.top = startY + 'px';
-
-            document.getElementById('outputCard').appendChild(wrapper);
-
-            const newSpriteObject = {
-                element: wrapper, behavior: behavior, x: startX, y: startY,
-                dx: (Math.random() * 3 + 2) * (Math.random() > 0.5 ? 1 : -1),
-                dy: (Math.random() * 3 + 2) * (Math.random() > 0.5 ? 1 : -1),
-                isDragging: false
-            };
-
-            activeSpritesList.push(newSpriteObject);
-            makeElementDraggable(wrapper, newSpriteObject);
-        }
-
-        // Engine State Machine Trigger Command
-        function toggleGameEngine() {
-            const btn = document.getElementById('toggleEngineBtn');
-            if (gameLoopRunning) {
-                gameLoopRunning = false;
-                btn.innerText = "🟢 Run Game Engine Live";
-                btn.style.backgroundColor = "#9c27b0";
-                cancelAnimationFrame(animationId);
-            } else {
-                gameLoopRunning = true;
-                btn.innerText = "🛑 Stop Engine Physics";
-                btn.style.backgroundColor = "#e74c3c";
-                runEngineLoop();
-            }
-        }
-
-        function runEngineLoop() {
-            if (!gameLoopRunning) return;
-            const card = document.getElementById('outputCard');
-            
-            activeSpritesList.forEach(sprite => {
-                if (sprite.isDragging) return;
-
-                const maxW = card.clientWidth - sprite.element.clientWidth;
-                const maxH = card.clientHeight - sprite.element.clientHeight;
-
-                if (sprite.behavior === 'bounce') {
-                    sprite.x += sprite.dx; sprite.y += sprite.dy;
-                    if (sprite.x <= 0 || sprite.x >= maxW) { sprite.dx *= -1; sprite.x = Math.max(0, Math.min(sprite.x, maxW)); }
-                    if (sprite.y <= 0 || sprite.y >= maxH) { sprite.dy *= -1; sprite.y = Math.max(0, Math.min(sprite.y, maxH)); }
-                } 
-                else if (sprite.behavior === 'fall') {
-                    sprite.y += 3;
-                    if (sprite.y >= maxH) { sprite.y = 0; sprite.x = Math.random() * maxW; }
-                } 
-                else if (sprite.behavior === 'float') {
-                    sprite.x += 2;
-                    if (sprite.x >= maxW) { sprite.x = 0; sprite.y = Math.random() * maxH; }
-                }
-
-                sprite.element.style.left = sprite.x + 'px';
-                sprite.element.style.top = sprite.y + 'px';
-            });
-
-            animationId = requestAnimationFrame(runEngineLoop);
-        }
-
-        function makeElementDraggable(elmnt, spriteObj) {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            
-elmnt.onmousedown = dragMouseDown;elmnt.ontouchstart = dragMouseDown;function dragMouseDown(e) {if (spriteObj) spriteObj.isDragging = true;e = e || window.event;const clientX = e.touches ? e.touches[0].clientX : e.clientX;const clientY = e.touches ? e.touches[0].clientY : e.clientY;pos3 = clientX;pos4 = clientY;document.onmouseup = closeDragElement;document.ontouchend = closeDragElement;document.onmousemove = elementDrag;document.ontouchmove = elementDrag;}function elementDrag(e) {e = e || window.event;const clientX = e.touches ? e.touches[0].clientX : e.clientX;const clientY = e.touches ? e.touches[0].clientY : e.clientY;pos1 = pos3 - clientX;pos2 = pos4 - clientY;pos3 = clientX;pos4 = clientY;let nTop = elmnt.offsetTop - pos2;let nLeft = elmnt.offsetLeft - pos1;if(spriteObj) {spriteObj.x = nLeft;spriteObj.y = nTop;}elmnt.style.top = nTop + "px";elmnt.style.left = nLeft + "px";}function closeDragElement() {if (spriteObj) spriteObj.isDragging = false;document.onmouseup = null; document.onmousemove = null;document.ontouchend = null; document.ontouchmove = null;}}function downloadWebsite() {const currentCardHtml = document.getElementById('outputCard').innerHTML;const currentBgColor = document.getElementById('previewArea').style.backgroundColor || 'lightblue';const fullHtmlTemplate = <!DOCTYPE html> <html> <head> <meta charset="UTF-8"><title>My Custom Studio Website</title> <style> body { font-family: sans-serif; margin:0; height:100vh; display:flex; justify-content:center; align-items:center; background-color: ${currentBgColor}; } .card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; word-wrap: break-word; position: relative; min-height: 350px; display: flex; flex-direction: column; align-items: center; } .sprite-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; } .char-emoji { font-size: 45px; line-height: 1; } .speech-bubble { background: white; border: 2px solid #333; border-radius: 8px; padding: 4px 8px; font-size: 13px; font-weight: bold; color: #222; text-align: center; max-width: 120px; word-wrap: break-word; margin-bottom: 4px; position: relative; } .speech-bubble::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); border-width: 8px 6px 0; border-style: solid; border-color: white transparent; } </style> </head> <body><div class="card">${currentCardHtml}</div></body></html>;const blob = new Blob([fullHtmlTemplate], { type: 'text/html' });const link = document.createElement('a');link.href = URL.createObjectURL(blob);link.download = 'my-custom-website.html';link.click();}updateWebsite();
+            if (query.includes("space") || query.includes("galaxy") || query.includes("alien")) {
+                heading = "🌌 The Interstellar Base"; color = "midnightblue";
+                message = "Welcome to your deep stellar launch zone. Navigation coordinates locked, tracking planet orbits.";
+                document.getElementById('gameEmoji').value = "🛸"; document.getElementById('spriteText').value = "Spotted!";
+                document.getElementById('outputHeading').style.color = "#ffffff"; document.getElementById('outputParagraph').style.color = "#cbd5e1";
+            } else if (query.includes("game") || query.includes("gaming") || query.includes("arcade")) {
+                heading = "🎮 Level Up Arcade"; color = "purple";
+                message = "The supreme terminal grid layout is loaded. Controller key mappings are verified, frame counts stable.";
+                document.getElementById('gameEmoji').value = "👾"; document.getElementById('spriteText').value = "Player 1 Active!";
+                document.getElementById('outputHeading').style.color = "#ffffff"; document.getElementById('outputParagraph').style.color = "#e2e8f0";
+            } else if (query.includes("puppy") || query.includes("dog") || query.includes("cat") || query.includes("cute")) {
+                heading = "🐾 The Cozy Pet Kingdom"; color = "pink";
+                message = "Welcome to the soft, adorable animal sanctuary corner! Cozy blankets and playtime treats are allowed here.";
+                document.getElementById('gameEmoji').value = "🐶"; document.getElementById('spriteText').value = "Play with me!";
+                document.getElementById('outputHeading').style.color = "#1e293b"; document.getElementById('outputParagraph').style.color = "#475569";
+            } else if (query.includes("spooky") || query.includes("ghost") || query.includes("halloween")) {
+                heading = "👻 The Haunted Mansion"; color = "darkslateblue";
+                message = "Creaking doors, flickering lanterns, and glowing digital phantoms drift down these empty layout halls.";
+                document.getElementById('gameEmoji').value = "🎃"; document.getElementById('spriteText').value = "Boo! Boo!";
+document.getElementById('outputHeading').style.color = "#ffffff"; document.getElementById('outputParagraph').style.color = "#cbd5e1";} else if (query !== "") {heading = "✨ The " + query.charAt(0).toUpperCase() + query.slice(1) + " Portal"; color = "lightgreen";message = "A customized, responsive creative studio profile optimized for editing all layout structures relating to " + query + ".";document.getElementById('outputHeading').style.color = "#1e293b"; document.getElementById('outputParagraph').style.color = "#475569";}document.getElementById('inputTitle').value = heading;document.getElementById('inputColor').value = color;document.getElementById('inputParagraph').value = message;updateCanvaCanvas();}// Canva Layout Layer Asset Spawning Logic Routinefunction spawnCanvaElement() {const emoji = document.getElementById('gameEmoji').value.trim() || "⭐";const dialogue = document.getElementById('spriteText').value.trim() || "";const behavior = document.getElementById('movementBehavior').value;const wrapper = document.createElement('div');wrapper.className = 'sprite-wrapper';if(dialogue !== "") {const bubble = document.createElement('div');bubble.className = 'speech-bubble';bubble.innerText = dialogue;wrapper.appendChild(bubble);}const visualIcon = document.createElement('div');visualIcon.className = 'char-emoji';visualIcon.innerText = emoji;wrapper.appendChild(visualIcon);// Stagger spawning coordinate boxes inside layout centersconst startX = Math.random() * 240 + 40;const startY = Math.random() * 120 + 160;wrapper.style.left = startX + 'px';wrapper.style.top = startY + 'px';document.getElementById('outputCard').appendChild(wrapper);const trackingObject = {element: wrapper, behavior: behavior, x: startX, y: startY,dx: (Math.random() * 3 + 2) * (Math.random() > 0.5 ? 1 : -1),dy: (Math.random() * 3 + 2) * (Math.random() > 0.5 ? 1 : -1),isDragging: false};activeElementsArray.push(trackingObject);makeCanvaAssetDraggable(wrapper, trackingObject);}function toggleCanvaPhysicsEngine() {const btn = document.getElementById('engineToggleBtn');if (gameLoopRunning) {gameLoopRunning = false;btn.innerText = "🟢 Run Design Motion Engine"; btn.style.backgroundColor = "#4f46e5";cancelAnimationFrame(animationFrameId);} else {gameLoopRunning = true;btn.innerText = "🛑 Stop Motion Engine"; btn.style.backgroundColor = "#e74c3c";runCanvaEngineLoop();}}function runCanvaEngineLoop() {if (!gameLoopRunning) return;const card = document.getElementById('outputCard');activeElementsArray.forEach(sprite => {if (sprite.isDragging) return;const maxW = card.clientWidth - sprite.element.clientWidth;const maxH = card.clientHeight - sprite.element.clientHeight;if (sprite.behavior === 'bounce') {sprite.x += sprite.dx; sprite.y += sprite.dy;if (sprite.x <= 0 || sprite.x >= maxW) { sprite.dx *= -1; sprite.x = Math.max(0, Math.min(sprite.x, maxW)); }if (sprite.y <= 0 || sprite.y >= maxH) { sprite.dy *= -1; sprite.y = Math.max(0, Math.min(sprite.y, maxH)); }}else if (sprite.behavior === 'fall') {sprite.y += 3;if (sprite.y >= maxH) { sprite.y = 0; sprite.x = Math.random() * maxW; }}else if (sprite.behavior === 'float') {sprite.x += 2;if (sprite.x >= maxW) { sprite.x = 0; sprite.y = Math.random() * maxH; }}sprite.element.style.left = sprite.x + 'px';sprite.element.style.top = sprite.y + 'px';});animationFrameId = requestAnimationFrame(runCanvaEngineLoop);}function makeCanvaAssetDraggable(elmnt, trackingObj) {let p1 = 0, p2 = 0, p3 = 0, p4 = 0;elmnt.onmousedown = startDrag; elmnt.ontouchstart = startDrag;function startDrag(e) {trackingObj.isDragging = true;const cX = e.touches ? e.touches[0].clientX : e.clientX;const cY = e.touches ? e.touches[0].clientY : e.clientY;p3 = cX; p4 = cY;document.onmouseup = endDrag; document.ontouchend = endDrag;document.onmousemove = movingDrag; document.ontouchmove = movingDrag;}function movingDrag(e) {const cX = e.touches ? e.touches[0].clientX : e.clientX;const cY = e.touches ? e.touches[0].clientY : e.clientY;p1 = p3 - cX; p2 = p4 - cY;p3 = cX; p4 = cY;trackingObj.x = elmnt.offsetLeft - p1;trackingObj.y = elmnt.offsetTop - p2;elmnt.style.top = trackingObj.y + "px";elmnt.style.left = trackingObj.x + "px";}function endDrag() {trackingObj.isDragging = false;document.onmouseup = null; document.onmousemove = null;document.ontouchend = null; document.ontouchmove = null;}}function downloadCanvaProject() {const currentCanvasHtml = document.getElementById('outputCard').innerHTML;const currentBgColor = document.getElementById('outputCard').style.backgroundColor || 'lightblue';const headingColor = document.getElementById('outputHeading').style.color || '#1e293b';const paraColor = document.getElementById('outputParagraph').style.color || '#64748b';const fullHtmlTemplate = <!DOCTYPE html> <html> <head> <meta charset="UTF-8"><title>My Canva Generated Design</title> <style> body { font-family: sans-serif; margin:0; height:100vh; display:flex; justify-content:center; align-items:center; background-color: #f3f5f9; } #outputCard { background: ${currentBgColor}; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); width: 100%; max-width: 520px; height: 460px; position: relative; overflow: hidden; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 20px; box-sizing: border-box; } h1 { margin: 20px 0 10px 0; font-size: 32px; color: ${headingColor}; text-align: center; } p { margin: 0; color: ${paraColor}; font-size: 16px; max-width: 85%; text-align: center; } .sprite-wrapper { position: absolute; display: flex; flex-direction: column; align-items: center; } .char-emoji { font-size: 50px; line-height: 1; } .speech-bubble { background: white; border: 2px solid #1e293b; border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 600; color: #1e293b; text-align: center; max-width: 130px; word-wrap: break-word; margin-bottom: 6px; position: relative; } .speech-bubble::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); border-width: 8px 6px 0; border-style: solid; border-color: white transparent; } </style> </head> <body><div id="outputCard">${currentCanvasHtml}</div></body></html>;const blob = new Blob([fullHtmlTemplate], { type: 'text/html' });const link = document.createElement('a');link.href = URL.createObjectURL(blob);link.download = 'canva-ai-project.html';link.click();}updateCanvaCanvas();
