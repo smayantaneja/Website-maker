@@ -3,148 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Website Maker & Emoji Sticker Studio</title>
+    <title>Hybrid AI Website & Game Studio</title>
     <style>
-        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; display: flex; height: 100vh; background-color: #f3f5f9; overflow: hidden; }
+        /* Base Global Styling Constants */
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; background-color: #0f172a; color: #f8fafc; transition: all 0.3s ease; }
         
-        /* Layout Split Screen Panels */
-        .editor-side { width: 40%; background: #ffffff; padding: 25px; box-shadow: 5px 0 20px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; overflow-y: auto; z-index: 10; }
-        .preview-side { width: 60%; padding: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; position: relative; gap: 20px; }
+        /* 💻 LAPTOP MODE (Default 3-Column Workspace Grid Layout) */
+        body.laptop-mode { display: flex; height: 100vh; overflow: hidden; }
+        body.laptop-mode .editor-side { width: 28%; height: 100vh; border-right: 1px solid #334155; }
+        body.laptop-mode .terminal-side { width: 32%; height: 100vh; border-right: 1px solid #1e293b; display: flex; }
+        body.laptop-mode .preview-side { width: 40%; height: 100vh; }
+
+        /* 📱 TABLET MODE (Vertical Flex Stack Layout) */
+        body.tablet-mode { display: flex; flex-direction: column; height: auto; overflow-y: auto; }
+        body.tablet-mode .editor-side { width: 100%; padding: 20px; border-bottom: 2px solid #334155; }
+        body.tablet-mode .terminal-side { width: 100%; padding: 20px; border-bottom: 2px solid #334155; display: block; }
+        body.tablet-mode .terminal-logs { height: 120px; }
+        body.tablet-mode .preview-side { width: 100%; padding: 40px 20px; min-height: 500px; }
+
+        /* Component Containers Structure Base rules */
+        .editor-side { background: #1e293b; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        .terminal-side { background: #0b0f19; padding: 20px; box-sizing: border-box; flex-direction: column; gap: 10px; }
+        .terminal-logs { flex: 1; width: 100%; background: #020617; border-radius: 8px; border: 1px solid #1e293b; padding: 15px; font-family: monospace; font-size: 13px; color: #34d399; overflow-y: auto; white-space: pre-wrap; box-sizing: border-box; line-height: 1.5; }
+        .preview-side { padding: 30px; display: flex; justify-content: center; align-items: center; box-sizing: border-box; background: #0f172a; position: relative; }
+
+        /* Form Controls Formatting UI elements */
+        h2 { margin: 0; color: #38bdf8; font-size: 20px; font-weight: 700; border-bottom: 2px solid #334155; padding-bottom: 10px; }
+        h3 { margin: 5px 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+        label { font-weight: 600; color: #cbd5e1; font-size: 13px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 2px solid #475569; border-radius: 6px; box-sizing: border-box; font-size: 14px; background: #0f172a; color: #f8fafc; }
+        textarea { height: 60px; resize: none; }
+
+        /* Hybrid View Toggle Switch Design */
+        .layout-toggle-panel { background: #334155; padding: 10px; border-radius: 8px; display: flex; gap: 10px; margin-bottom: 5px; }
+        .toggle-btn { flex: 1; padding: 8px; font-size: 12px; background: #0f172a; color: #94a3b8; border: 1px solid #475569; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .toggle-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
         
-        /* UI Input Elements */
-        h2 { margin-top: 0; color: #7d2ae8; font-size: 22px; font-weight: 700; border-bottom: 2px solid #f1f2f6; padding-bottom: 12px; }
-        h3 { margin: 15px 0 5px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-        label { font-weight: 600; color: #334155; font-size: 13px; }
-        input, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s; }
-        input:focus, textarea:focus { border-color: #7d2ae8; outline: none; }
-        textarea { height: 70px; resize: none; }
-        
-        /* Theme Panels & Custom Layout Buttons */
-        .ai-badge-box { background: linear-gradient(135deg, #7d2ae8 0%, #00c4cc 100%); padding: 15px; border-radius: 12px; color: white; display: flex; flex-direction: column; gap: 8px; }
-        button { background-color: #7d2ae8; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; }
-        button:hover { opacity: 0.9; }
-        .btn-ai { background: linear-gradient(135deg, #7d2ae8 0%, #2575fc 100%); }
-        .btn-sticker { background-color: #00c4cc; color: #0f172a; }
-        .btn-download { background-color: #2ecc71; }
+        /* Interactive Buttons Theme Row */
+        .ai-badge-box { background: linear-gradient(135deg, #0284c7 0%, #3b82f6 100%); padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
+        button { background-color: #38bdf8; color: #0f172a; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; }
+        .btn-ai { background: #f43f5e; color: white; }
+        .btn-sticker { background-color: #10b981; color: white; }
+        .btn-download { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; margin-top: auto; }
 
-        /* AutoGPT Interactive Debug Log Terminal */
-        .terminal-logs { width: 100%; height: 110px; background: #020617; border-radius: 8px; border: 1px solid #1e293b; padding: 10px; font-family: monospace; font-size: 11px; color: #34d399; overflow-y: auto; white-space: pre-wrap; box-sizing: border-box; }
+        /* Canvas Live Visual Template Display Box Frame */
+        #outputCard { background: #38bdf8; padding: 40px; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); width: 100%; max-width: 440px; height: 440px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; justify-content: flex-start; align-items: center; box-sizing: border-box; transition: background-color 0.4s ease; }
+        #outputHeading { margin: 20px 0 10px 0; font-size: 28px; color: #0f172a; text-align: center; font-weight: 800; }
+        #outputParagraph { margin: 0; color: #1e293b; font-size: 15px; max-width: 90%; text-align: center; line-height: 1.5; }
 
-        /* Right Side Live Website Display Canvas */
-        #outputCard { background: #ffffff; padding: 40px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); width: 100%; max-width: 520px; height: 420px; position: relative; overflow: hidden; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; box-sizing: border-box; transition: background-color 0.4s ease; }
-        #outputHeading { margin: 20px 0 10px 0; font-size: 32px; color: #1e293b; text-align: center; font-weight: 700; }
-        #outputParagraph { margin: 0; color: #64748b; font-size: 16px; max-width: 85%; text-align: center; line-height: 1.5; }
-
-        /* Draggable Emoji Stickers Layout */
-        .emoji-sticker { position: absolute; font-size: 55px; cursor: move; user-select: none; touch-action: none; z-index: 100; left: 45%; top: 45%; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+        /* Cross Platform Mouse & Pointer Draggable Components Layer */
+        .emoji-sticker { position: absolute; font-size: 60px; cursor: move; user-select: none; touch-action: none; z-index: 100; left: 42%; top: 45%; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)); }
     </style>
 </head>
-<body>
+<body class="laptop-mode"> <!-- Laptop configuration loaded by default initial state -->
 
-    <!-- LEFT SIDE: AI Control Panel Sidebar -->
+    <!-- COLUMN 1: Settings Panel & Inputs Sidebar Dashboard -->
     <div class="editor-side">
-        <h2>✨ AI Website Maker Suite</h2>
+        <h2>🛠️ Studio Platform</h2>
         
-        <!-- 1. AI Magic Prompt Box -->
+        <!-- Interactive Mode Selector Toggle Switch -->
+        <div class="layout-toggle-panel">
+            <button class="toggle-btn active" id="laptopToggle" onclick="switchLayoutMode('laptop')">💻 Laptop View</button>
+            <button class="toggle-btn" id="tabletToggle" onclick="switchLayoutMode('tablet')">📱 Tablet View</button>
+        </div>
+
         <div class="ai-badge-box">
-            <label for="aiPrompt" style="color: white;">🪄 AutoGPT Agent Directive Theme Prompt:</label>
-            <input type="text" id="aiPrompt" placeholder="Try: space theme, cute puppy, level up arcade...">
-            <button class="btn-ai" onclick="runAutoGPTAIBuilder()">⚡ Generate Website with AI</button>
+            <label for="aiPrompt" style="color: white;">🪄 AutoGPT Agent Prompt Directive:</label>
+            <input type="text" id="aiPrompt" placeholder="Try: space base, gaming level, puppy hub...">
+            <button class="btn-ai" onclick="triggerAutoGPTAgentLoop()">⚡ Build Site with AI</button>
         </div>
 
-        <h3>📝 Customize Base Layout Elements</h3>
-        <label for="inputTitle">Website Main Title Heading:</label>
-        <input type="text" id="inputTitle" value="My Studio Canvas" oninput="updateLiveWebsiteCanvas()">
+        <h3>📝 Edit Layout Content</h3>
+        <label for="inputTitle">Title Heading Text:</label>
+        <input type="text" id="inputTitle" value="My Hybrid Canvas" oninput="syncCanvasView()">
 
-        <label for="inputColor">Background Color (e.g. green, blue, pink):</label>
-        <input type="text" id="inputColor" value="lightblue" oninput="updateLiveWebsiteCanvas()">
+        <label for="inputColor">Background Style Color (Name or Hex):</label>
+        <input type="text" id="inputColor" value="#38bdf8" oninput="syncCanvasView()">
 
-        <label for="inputParagraph">Main Body Paragraph Content Text:</label>
-        <textarea id="inputParagraph" oninput="updateLiveWebsiteCanvas()">Use the AI box above to create an original template or type inside these manual inputs!</textarea>
+        <label for="inputParagraph">Main Description Subtext Content:</label>
+        <textarea id="inputParagraph" oninput="syncCanvasView()">Type here manually or tap your device toggle switch up top to adapt the workspace canvas view panels!</textarea>
 
-        <h3>🎨 Emoji Sticker Studio</h3>
-        <label for="inputEmoji">Type an Emoji Sticker to Add:</label>
+        <h3>🎨 Component Asset Library</h3>
+        <label for="inputEmoji">Choose Graphic Sticker Emoji:</label>
         <div style="display:flex; gap:10px;">
-            <input type="text" id="inputEmoji" value="🚀" style="width:75px; text-align:center; font-size: 20px;">
-            <button class="btn-sticker" style="flex:1;" onclick="addStudioEmojiSticker()">➕ Spawn Sticker Layer</button>
+            <input type="text" id="inputEmoji" value="🛸" style="width:65px; text-align:center; font-size: 18px;">
+            <button class="btn-sticker" onclick="addNewGraphicComponent()">➕ Spawn Asset</button>
         </div>
-        <p style="font-size:12px; color:#64748b; margin:0;">Tip: You can use your finger to slide and position the emojis anywhere inside your layout box card!</p>
 
-        <button class="btn-download" onclick="downloadProjectWebsite()">📥 Download Final HTML Web File</button>
+        <button class="btn-download" onclick="compileCodeToDownload()">📥 Download Production HTML File</button>
     </div>
 
-    <!-- RIGHT SIDE: Terminal Logs & Real-Time Output Frame Container -->
+    <!-- COLUMN 2: Continuous Execution Code Logs Terminal Panel Window -->
+    <div class="terminal-side" id="terminalColumn">
+        <h3>💻 AutoGPT Agent Execution Logs</h3>
+        <div class="terminal-logs" id="terminalBox">SYSTEM: Multi-layout engine active. Listening for framework matrix parameters...</div>
+    </div>
+
+    <!-- COLUMN 3: Live Virtual Web Preview Box Frame Area Canvas -->
     <div class="preview-side">
-        <!-- Live Continuous Thinking Simulation Logs -->
-        <div class="terminal-logs" id="terminalLogBox">SYSTEM: AutoGPT Engine online. Choose or input a prompt command sequence...</div>
-        
-        <!-- Live Functional Card -->
         <div id="outputCard">
-            <h1 id="outputHeading">My Studio Canvas</h1>
-            <p id="outputParagraph">Use the AI box above to create an original template or type inside these manual inputs!</p>
+            <h1 id="outputHeading">My Hybrid Canvas</h1>
+            <p id="outputParagraph">Type here manually or tap your device toggle switch up top to adapt the workspace canvas view panels!</p>
         </div>
     </div>
 
     <script>
-        const logBox = document.getElementById('terminalLogBox');
+        const terminal = document.getElementById('terminalBox');
 
-        function printLog(msg) {
-            logBox.innerText += "\n" + msg;
-            logBox.scrollTop = logBox.scrollHeight;
+        // Dynamic State Screen View Swapper Engine
+        function switchLayoutMode(mode) {
+            const body = document.body;
+            const lapBtn = document.getElementById('laptopToggle');
+            const tabBtn = document.getElementById('tabletToggle');
+
+            if (mode === 'laptop') {
+                body.className = "laptop-mode";
+                lapBtn.className = "toggle-btn active";
+                tabBtn.className = "toggle-btn";
+                pushLog("SYSTEM: Layout adapted to Widescreen Desktop parameters. 3-Column console matrix active.");
+            } else {
+                body.className = "tablet-mode";
+                lapBtn.className = "toggle-btn";
+                tabBtn.className = "toggle-btn active";
+                pushLog("SYSTEM: Layout adapted to Portrait Mobile rules. Stacked card layout panel rendering active.");
+            }
         }
 
-        function updateLiveWebsiteCanvas() {
+        function pushLog(text) {
+            terminal.innerText += "\n" + text;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function syncCanvasView() {
             document.getElementById('outputHeading').innerText = document.getElementById('inputTitle').value;
             document.getElementById('outputParagraph').innerText = document.getElementById('inputParagraph').value;
             document.getElementById('outputCard').style.backgroundColor = document.getElementById('inputColor').value;
         }
 
-        // AutoGPT Simulation System Logic Loop
-        function runAutoGPTAIBuilder() {
-            const query = document.getElementById('aiPrompt').value.toLowerCase().trim();
-            if(!query) {
-                printLog("⚠️ SYSTEM ERROR: AI input query is blank.");
+        function triggerAutoGPTAgentLoop() {
+            const prompt = document.getElementById('aiPrompt').value.toLowerCase().trim();
+            if(!prompt) {
+                pushLog("⚠️ ENGINE EXCEPTION: Target query prompt is empty.");
                 return;
             }
 
-            printLog(`\n🤖 LOOP START: "Designing a layout matching: ${query}"`);
-            printLog("[THOUGHTS]: Analyzing text semantics to identify theme structures and background parameters.");
-            
-            let heading = "Custom Asset Hub";
-            let color = "lightblue";
-            let text = "Landing portal dynamically generated by assistant programming layouts.";
+            pushLog(`\n🤖 PROCESS INITIATED: directive = "${prompt}"`);
+            pushLog("[THOUGHTS]: Parsing layout objectives. Processing string allocations and template colors.");
 
-            if (query.includes("space") || query.includes("galaxy") || query.includes("alien")) {
-                heading = "The Interstellar Base"; color = "midnightblue";
-                text = "Welcome to deep sector coordinates. Exploring asteroid fields and deep orbits.";
-                document.getElementById('inputEmoji').value = "🛸";
-                document.getElementById('outputHeading').style.color = "#ffffff";
-                document.getElementById('outputParagraph').style.color = "#cbd5e1";
-            } else if (query.includes("game") || query.includes("gaming") || query.includes("arcade")) {
-                heading = "Level Up Arcade"; color = "purple";
-                text = "The supreme terminal grid layout is loaded. Controller key mappings are verified, frame counts stable.";
-                document.getElementById('inputEmoji').value = "👾";
-                document.getElementById('outputHeading').style.color = "#ffffff";
-                document.getElementById('outputParagraph').style.color = "#e2e8f0";
-            } else if (query.includes("puppy") || query.includes("dog") || query.includes("cat") || query.includes("cute")) {
-                heading = "The Cozy Pet Kingdom"; color = "pink";
-                text = "Welcome to the soft, adorable animal sanctuary corner! Cozy blankets and playtime treats are allowed here.";
-                document.getElementById('inputEmoji').value = "🐶";
-                document.getElementById('outputHeading').style.color = "#1e293b";
-                document.getElementById('outputParagraph').style.color = "#475569";
-            } else if (query.includes("spooky") || query.includes("ghost") || query.includes("halloween")) {
-                heading = "The Haunted Mansion"; color = "darkslateblue";
-                text = "Creaking doors, flickering lanterns, and mysterious floating phantoms drift down these empty layout halls.";
-                document.getElementById('inputEmoji').value = "👻";
-                document.getElementById('outputHeading').style.color = "#ffffff";
-                document.getElementById('outputParagraph').style.color = "#cbd5e1";
-            } else {
-                heading = "The " + query.charAt(0).toUpperCase() + query.slice(1) + " Page"; color = "lightgreen";
-                text = "A customized layout portal specifically created to showcase details matching the keyword: " + query;
-                document.getElementById('outputHeading').style.color = "#1e293b";
-                document.getElementById('outputParagraph').style.color = "#475569";
-            }
+            let header = "Custom Asset Station"; let color = "#475569";
+            let subtext = "Continuous code blocks successfully built and compiled by autonomous scripts.";
 
-            // Sync values to manual input boxes so the user can still edit them freely!
-            setTimeout(() => {
-printLog("[ACTION]: Writing code layers, mapping CSS background configurations, and injecting text nodes.");document.getElementById('inputTitle').value = heading;document.getElementById('inputColor').value = color;document.getElementById('inputParagraph').value = text;updateLiveWebsiteCanvas();printLog("✅ SUCCESS: Web layout compilation complete.");}, 1000);}// Emoji Sticker Studio Creation Functionfunction addStudioEmojiSticker() {const emoji = document.getElementById('inputEmoji').value.trim();if(!emoji) return;const sticker = document.createElement('div');sticker.className = 'emoji-sticker';sticker.innerText = emoji;// Random initial placement locations near card centersticker.style.left = (Math.random() * 50 + 25) + '%';sticker.style.top = (Math.random() * 50 + 25) + '%';makeStickerFingerDraggable(sticker);document.getElementById('outputCard').appendChild(sticker);printLog(SYSTEM: Successfully spawned emoji sticker element [${emoji}] onto layout grid.);}// Finger drag and drop event listeners optimized for touch screensfunction makeStickerFingerDraggable(elmnt) {let p1 = 0, p2 = 0, p3 = 0, p4 = 0;elmnt.onmousedown = dragStart;elmnt.ontouchstart = dragStart;function dragStart(e) {e = e || window.event;const clientX = e.touches ? e.touches[0].clientX : e.clientX;const clientY = e.touches ? e.touches[0].clientY : e.clientY;p3 = clientX; p4 = clientY;document.onmouseup = dragEnd; document.ontouchend = dragEnd;document.onmousemove = dragMove; document.ontouchmove = dragMove;}function dragMove(e) {const clientX = e.touches ? e.touches[0].clientX : e.clientX;const clientY = e.touches ? e.touches[0].clientY : e.clientY;p1 = p3 - clientX; p2 = p4 - clientY;p3 = clientX; p4 = clientY;elmnt.style.top = (elmnt.offsetTop - p2) + "px";elmnt.style.left = (elmnt.offsetLeft - p1) + "px";}function dragEnd() {document.onmouseup = null; document.onmousemove = null;document.ontouchend = null; document.ontouchmove = null;}}// Compile file to download cleanly to devicefunction downloadProjectWebsite() {const innerHtml = document.getElementById('outputCard').innerHTML;const bgColor = document.getElementById('outputCard').style.backgroundColor || 'lightblue';const hColor = document.getElementById('outputHeading').style.color || '#1e293b';const pColor = document.getElementById('outputParagraph').style.color || '#64748b';const template = <!DOCTYPE html> <html> <head> <meta charset="UTF-8"><title>My AI Generated Page</title> <style> body { font-family: sans-serif; margin:0; height:100vh; display:flex; justify-content:center; align-items:center; background-color: #f3f5f9; } #card { background: ${bgColor}; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); width: 100%; max-width: 520px; height: 420px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 20px; box-sizing: border-box; } h1 { margin: 20px 0 10px 0; font-size: 32px; color: ${hColor}; } p { margin: 0; color: ${pColor}; font-size: 16px; max-width: 85%; text-align: center; } .emoji-sticker { position: absolute; font-size: 55px; user-select: none; } </style> </head> <body><div id="card">${innerHtml}</div></body></html>;const blob = new Blob([template], { type: 'text/html' });const downloadUrlLink = document.createElement('a');downloadUrlLink.href = URL.createObjectURL(blob);downloadUrlLink.download = 'ai-maker-website.html';downloadUrlLink.click();}updateLiveWebsiteCanvas();
+            if (prompt.includes("space") || prompt.includes("galaxy") || prompt.includes("alien")) {
+        subtext = "Welcome to deep quadrant coordinates. Monitoring planetary rings and orbit sectors live.";document.getElementById('inputEmoji').value = "🛸";document.getElementById('outputHeading').style.color = "#ffffff"; document.getElementById('outputParagraph').style.color = "#94a3b8";} else if (prompt.includes("game") || prompt.includes("gaming") || prompt.includes("arcade")) {header = "🕹️ Neon Arcade Terminal"; color = "#0f172a";subtext = "The system terminal matrix loop is online. Controller hardware hooks verified, frame rates stable.";document.getElementById('inputEmoji').value = "👾";document.getElementById('outputHeading').style.color = "#38bdf8"; document.getElementById('outputParagraph').style.color = "#cbd5e1";} else if (prompt.includes("puppy") || prompt.includes("dog") || prompt.includes("cat") || prompt.includes("cute")) {header = "🐾 The Cozy Animal Haven"; color = "#fce7f3";subtext = "Welcome to the soft animal sanctuary grid layout! Playtime variables active, snacks are ready.";document.getElementById('inputEmoji').value = "🐶";document.getElementById('outputHeading').style.color = "#0f172a"; document.getElementById('outputParagraph').style.color = "#475569";} else {header = "The " + prompt.charAt(0).toUpperCase() + prompt.slice(1) + " Hub"; color = "#1e293b";subtext = "A fully custom landing page portal structured completely around properties relating to: " + prompt;document.getElementById('outputHeading').style.color = "#ffffff"; document.getElementById('outputParagraph').style.color = "#94a3b8";}setTimeout(() => {pushLog("[ACTION]: Generating structural tags, mapping layout coordinates, and packing CSS rules.");document.getElementById('inputTitle').value = header;document.getElementById('inputColor').value = color;document.getElementById('inputParagraph').value = subtext;syncCanvasView();pushLog("✅ LOG SUCCESS: Document tree update loop completed flawlessly.");}, 800);}function addNewGraphicComponent() {const assetChar = document.getElementById('inputEmoji').value.trim();if(!assetChar) return;const elementNode = document.createElement('div');elementNode.className = 'emoji-sticker';elementNode.innerText = assetChar;elementNode.style.left = (Math.random() * 40 + 30) + '%';elementNode.style.top = (Math.random() * 40 + 30) + '%';applyUniversalCrossPlatformDraggableSystem(elementNode);document.getElementById('outputCard').appendChild(elementNode);pushLog(SYSTEM: Linked new graphics layer node [${assetChar}] successfully onto layout view.);}// Universal Hybrid Input Touch Surface & Tracking System calculationsfunction applyUniversalCrossPlatformDraggableSystem(element) {let offsetChangeX = 0, offsetChangeY = 0, lastX = 0, lastY = 0;element.onmousedown = startDrag;element.ontouchstart = startDrag; // Tablet gesture event anchorfunction startDrag(e) {e = e || window.event;// Parse mouse click event locations vs tablet finger touches index sets safelyconst pointerX = e.touches ? e.touches[0].clientX : e.clientX;const pointerY = e.touches ? e.touches[0].clientY : e.clientY;lastX = pointerX;lastY = pointerY;document.onmouseup = stopDrag; document.ontouchend = stopDrag;document.onmousemove = moveDrag; document.ontouchmove = moveDrag;}function moveDrag(e) {e = e || window.event;const pointerX = e.touches ? e.touches[0].clientX : e.clientX;const pointerY = e.touches ? e.touches[0].clientY : e.clientY;offsetChangeX = lastX - pointerX;offsetChangeY = lastY - pointerY;lastX = pointerX;lastY = pointerY;element.style.top = (element.offsetTop - offsetChangeY) + "px";element.style.left = (element.offsetLeft - offsetChangeX) + "px";}function stopDrag() {document.onmouseup = null; document.onmousemove = null;document.ontouchend = null; document.ontouchmove = null;}}function compileCodeToDownload() {const markup = document.getElementById('outputCard').innerHTML;const bgHex = document.getElementById('outputCard').style.backgroundColor || '#38bdf8';const headColor = document.getElementById('outputHeading').style.color || '#0f172a';const descColor = document.getElementById('outputParagraph').style.color || '#1e293b';const standardTemplate = <!DOCTYPE html> <html> <head> <meta charset="UTF-8"><title>My Studio Code Package</title> <style> body { font-family: sans-serif; margin:0; height:100vh; display:flex; justify-content:center; align-items:center; background-color: #0f172a; } #productionCard { background: ${bgHex}; border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); width: 100%; max-width: 440px; height: 440px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 20px; box-sizing: border-box; } h1 { margin: 20px 0 10px 0; font-size: 28px; color: ${headColor}; font-weight:800; } p { margin: 0; color: ${descColor}; font-size: 15px; max-width: 90%; text-align: center; } .emoji-sticker { position: absolute; font-size: 60px; user-select: none; } </style> </head> <body><div id="productionCard">${markup}</div></body></html>;const dataBlob = new Blob([standardTemplate], { type: 'text/html' });const anchor = document.createElement('a');anchor.href = URL.createObjectURL(dataBlob);anchor.download = 'production-ai-website.html';anchor.click();}syncCanvasView();        header = "🌌 Deep Space Outpost"; color = "#020617";
